@@ -108,12 +108,13 @@ export async function download(url, dest) {
 }
 
 // Resumable step. Records completed steps to .CHECK_POINTS (NAME1,NAME2,...) in
-// the cwd so re-running skips done steps. callback returning false (or throwing)
-// aborts: the step is NOT recorded and the error propagates.
-const CHECKPOINT_FILE = ".CHECK_POINTS";
+// the entry script's dir (via at) so re-running skips done steps. callback
+// returning false (or throwing) aborts: the step is NOT recorded and the error
+// propagates.
+const checkPointFile = () => at(".CHECK_POINTS");
 const readCheckPoints = () => {
   try {
-    return fs.readFileSync(CHECKPOINT_FILE, "utf8").split(",").map((s) => s.trim()).filter(Boolean);
+    return fs.readFileSync(checkPointFile(), "utf8").split(",").map((s) => s.trim()).filter(Boolean);
   } catch {
     return [];
   }
@@ -126,7 +127,7 @@ export async function step(name, callback) {
   console.log(`[run]  ${name}`);
   if ((await callback()) === false) panic(`checkpoint failed: ${name}`);
 
-  fs.writeFileSync(CHECKPOINT_FILE, [...done, name].join(","));
+  fs.writeFileSync(checkPointFile(), [...done, name].join(","));
 }
 
 // Read a single line from stdin with a prompt.
