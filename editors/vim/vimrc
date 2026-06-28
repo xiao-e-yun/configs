@@ -1,0 +1,317 @@
+set autoindent expandtab tabstop=2 shiftwidth=2
+set termguicolors
+set incsearch
+set hlsearch
+set cursorline
+set foldmethod=syntax
+set foldlevel=3
+
+set mouse=
+set mousemodel=extend
+
+set clipboard=unnamedplus
+
+call plug#begin('~/.vim/plugged')
+" Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'neoclide/coc.nvim', {'branch': 'master', 'do': 'npm ci'}
+
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+" Plug 'preservim/nerdtree'
+
+Plug 'tpope/vim-fugitive'
+Plug 'airblade/vim-gitgutter'
+Plug 'github/copilot.vim'
+Plug 'wakatime/vim-wakatime'
+
+Plug 'easymotion/vim-easymotion'
+Plug 'mg979/vim-visual-multi', {'branch': 'master'}
+
+" Airline
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+
+if has('nvim')
+  Plug 'folke/tokyonight.nvim'
+endif
+Plug 'catppuccin/vim', { 'as': 'catppuccin' }
+
+Plug 'ojroques/vim-oscyank', {'branch': 'main'}
+call plug#end()
+
+nnoremap <leader>p :set paste!<CR>
+
+nmap <leader>y <Plug>OSCYankOperator
+nmap <leader>yy <leader>y_
+vmap <leader>y <Plug>OSCYankVisual
+
+if has('nvim')
+  colorscheme tokyonight
+else
+  colorscheme catppuccin_macchiato
+endif
+
+let $FZF_DEFAULT_COMMAND = 'rg --files'
+
+let g:copilot_no_tab_map = v:true
+
+let g:gitgutter_sign_added = '|'
+let g:gitgutter_sign_modified = '|'
+let g:gitgutter_sign_removed = '_'
+let g:gitgutter_sign_removed_first_line = '‾'
+let g:gitgutter_sign_removed_above_and_below = '‾_'
+let g:gitgutter_sign_modified_removed = '|_'
+
+" Custom Airline
+let g:airline_theme = 'catppuccin_mocha'
+let g:airline_powerline_fonts = 1
+let g:airline#extensions#tabline#enabled = 0
+let g:airline#extensions#whitespace#enabled = 0
+let g:airline_skip_empty_sections = 1
+let g:airline_section_y=''
+let g:airline_section_z=airline#section#create(['%3p%% %l:%2v'])
+
+map <silent> <esc> :noh<CR>
+tnoremap <c-b> <c-\><c-n>
+" nnoremap <leader>n :NERDTreeFocus<CR>
+" nnoremap <C-t> :NERDTreeToggle<CR>
+nmap <C-p> :Files<CR>
+
+" explorer
+:nmap <C-t> <Cmd>CocCommand explorer 
+      \--sources=file+ 
+      \--root-strategies=cwd 
+      \--width 30 
+      \ <CR>
+
+set number relativenumber
+set hidden
+
+
+let g:VM_maps = {}
+let g:VM_maps["Undo"] = 'u'
+let g:VM_maps["Redo"] = '<C-r>'
+let g:VM_maps["Add Cursor Down"]    = '<M-j>'   " new cursor down
+let g:VM_maps["Add Cursor Up"]      = '<M-k>'   " new cursor up
+autocmd User visual_multi_mappings imap <buffer><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<Plug>(VM-I-Return)"
+autocmd User visual_multi_mappings imap <buffer><expr><silent> <TAB>
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ coc#refresh()
+autocmd User visual_multi_mappings imap <buffer><expr> <S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+" <C-f>{char} to move to {char}
+noremap <c-j> <Plug>(easymotion-bd-f)
+nnoremap <c-j> <Plug>(easymotion-overwin-f)
+
+" s{char}{char} to move to {char}{char}
+map s <Plug>(easymotion-bd-f2)
+
+" https://raw.githubusercontent.com/neoclide/coc.nvim/master/coc-example.vim
+
+" May need for Vim (not Neovim) since coc.nvim calculates byte offset by count
+" utf-8 byte sequence
+set encoding=utf-8
+" Some servers have issues with backup files, see #649
+set nobackup
+set nowritebackup
+
+" Having longer updatetime (default is 4000 ms = 4s) leads to noticeable
+" delays and poor user experience
+set updatetime=300
+
+" Always show the signcolumn, otherwise it would shift the text each time
+" diagnostics appear/become resolved
+set signcolumn=yes
+
+" Use tab for trigger completion with characters ahead and navigate
+" NOTE: There's always complete item selected by default, you may want to enable
+" no select by `"suggest.noselect": true` in your configuration file
+" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
+" other plugin before putting this into your config
+inoremap <silent><expr> <TAB>
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+" Make <CR> to accept selected completion item or notify coc.nvim to format
+" <C-g>u breaks current undo, please make your own choice
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+" Use <c-space> to trigger completion
+if has('nvim')
+  inoremap <silent><expr> <c-n> coc#refresh()
+else
+  inoremap <silent><expr> <c-n> coc#refresh()
+endif
+
+" Use `[g` and `]g` to navigate diagnostics
+" Use `:CocDiagnostics` to get all diagnostics of current buffer in location list
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+
+" GoTo code navigation
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+" Use K to show documentation in preview window
+nnoremap <silent> K :call ShowDocumentation()<CR>
+
+function! ShowDocumentation()
+  if CocAction('hasProvider', 'hover')
+    call CocActionAsync('doHover')
+  else
+    call feedkeys('K', 'in')
+  endif
+endfunction
+
+" Highlight the symbol and its references when holding the cursor
+autocmd CursorHold * silent call CocActionAsync('highlight')
+
+" Symbol renaming
+nmap <leader>rn <Plug>(coc-rename)
+
+" Formatting selected code
+xmap <leader>f  <Plug>(coc-format-selected)
+nmap <leader>f  <Plug>(coc-format)
+
+augroup mygroup
+  autocmd!
+  " Setup formatexpr specified filetype(s)
+  autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
+  " Update signature help on jump placeholder
+  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+augroup end
+
+" Applying code actions to the selected code block
+" Example: `<leader>aap` for current paragraph
+xmap <leader>a  <Plug>(coc-codeaction-selected)
+nmap <leader>a  <Plug>(coc-codeaction-selected)
+
+" Remap keys for applying code actions at the cursor position
+nmap <leader>ac  <Plug>(coc-codeaction-cursor)
+" Remap keys for apply code actions affect whole buffer
+nmap <leader>as  <Plug>(coc-codeaction-source)
+" Apply the most preferred quickfix action to fix diagnostic on the current line
+nmap <leader>qf <Plug>(coc-fix-current)
+
+" Remap keys for applying refactor code actions
+nmap <silent> <leader>re <Plug>(coc-codeaction-refactor)
+xmap <silent> <leader>r  <Plug>(coc-codeaction-refactor-selected)
+nmap <silent> <leader>r  <Plug>(coc-codeaction-refactor-selected)
+
+" Run the Code Lens action on the current line
+nmap <leader>cl  <Plug>(coc-codelens-action)
+
+" Map function and class text objects
+" NOTE: Requires 'textDocument.documentSymbol' support from the language server
+xmap if <Plug>(coc-funcobj-i)
+omap if <Plug>(coc-funcobj-i)
+xmap af <Plug>(coc-funcobj-a)
+omap af <Plug>(coc-funcobj-a)
+xmap ic <Plug>(coc-classobj-i)
+omap ic <Plug>(coc-classobj-i)
+xmap ac <Plug>(coc-classobj-a)
+omap ac <Plug>(coc-classobj-a)
+
+" Remap <C-f> and <C-b> to scroll float windows/popups
+if has('nvim-0.4.0') || has('patch-8.2.0750')
+  nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+  nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+  inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
+  inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
+  vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+  vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+endif
+
+" Use CTRL-S for selections ranges
+" Requires 'textDocument/selectionRange' support of language server
+nmap <silent> <C-s> <Plug>(coc-range-select)
+xmap <silent> <C-s> <Plug>(coc-range-select)
+
+" Add `:Format` command to format current buffer
+command! -nargs=0 Format :call CocActionAsync('format')
+
+" Add `:Fold` command to fold current buffer
+command! -nargs=? Fold :call     CocAction('fold', <f-args>)
+
+" Add `:OR` command for organize imports of the current buffer
+command! -nargs=0 OR   :call     CocActionAsync('runCommand', 'editor.action.organizeImport')
+
+" Add (Neo)Vim's native statusline support
+" NOTE: Please see `:h coc-status` for integrations with external plugins that
+" provide custom statusline: lightline.vim, vim-airline
+set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
+
+" Mappings for CoCList
+" Show all diagnostics
+nnoremap <silent><nowait> <space>a  :<C-u>CocList diagnostics<cr>
+" Manage extensions
+nnoremap <silent><nowait> <space>e  :<C-u>CocList extensions<cr>
+" Show commands
+nnoremap <silent><nowait> <space>c  :<C-u>CocList commands<cr>
+" Find symbol of current document
+nnoremap <silent><nowait> <space>o  :<C-u>CocList outline<cr>
+" Search workspace symbols
+nnoremap <silent><nowait> <space>s  :<C-u>CocList -I symbols<cr>
+" Do default action for next item
+nnoremap <silent><nowait> <space>j  :<C-u>CocNext<CR>
+" Do default action for previous item
+nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
+" Resume latest coc list
+nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
+
+" Switch between terminal
+function! s:BlistTerminal()
+  let matching_buffers = []
+  " Get a list of all existing buffer numbers
+  let all_buffers = filter(range(1, bufnr('$')), 'bufexists(v:val)')
+
+  " Filter for buffers that match the pattern and are listed
+  for buf_num in all_buffers
+    if buflisted(buf_num) && getbufvar(buf_num, '&buftype') ==# 'terminal'
+      call add(matching_buffers, buf_num)
+    endif
+  endfor
+  return matching_buffers
+endfunction
+
+function! s:BnextTerminal()
+  let matching_buffers = s:BlistTerminal()
+  let current_buf_index = index(matching_buffers, bufnr('%'))
+  let next_buf_index = (current_buf_index + 1) % len(matching_buffers)
+
+  " Go to the next buffer in the filtered list
+  if len(matching_buffers) > 0
+    execute 'buffer ' . matching_buffers[next_buf_index]
+  else
+    echo "No terminal buffers found"
+  endif
+endfunction
+
+function! s:BprevTerminal()
+  let matching_buffers = s:BlistTerminal()
+  let current_buf_index = index(matching_buffers, bufnr('%'))
+  let prev_buf_index = (current_buf_index - 1 + len(matching_buffers)) % len(matching_buffers)
+
+  " Go to the next buffer in the filtered list
+  if len(matching_buffers) > 0
+    execute 'buffer ' . matching_buffers[prev_buf_index]
+  else
+    echo "No terminal buffer found"
+  endif
+endfunction
+
+command! BnextTerminal call s:BnextTerminal()
+command! BprevTerminal call s:BprevTerminal()
+nnoremap <C-l> :BnextTerminal<CR>
+nnoremap <C-h> :BprevTerminal<CR>
